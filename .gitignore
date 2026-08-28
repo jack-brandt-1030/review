@@ -1,0 +1,7 @@
+Review.dproj.local
+Review.identcache
+Review.res
+*.dres
+/Win32
+/__history
+/__recovery
