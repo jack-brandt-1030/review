@@ -1,0 +1,185 @@
+unit Main;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.ToolWin, Generics.Collections,
+  Vcl.NumberBox, Vcl.Buttons;
+
+type
+  TMainForm = class(TForm)
+    GenerateBtn: TButton;
+    Memo: TMemo;
+    PageControl: TPageControl;
+    SheetA: TTabSheet;
+    SheetB: TTabSheet;
+    Tree: TTreeView;
+    ReviewBtn: TButton;
+    SheetC: TTabSheet;
+    TopPanel: TPanel;
+    ToolBar: TToolBar;
+    ExpandBtn: TToolButton;
+    NumberBox: TNumberBox;
+    PanelA: TPanel;
+    PanelB: TPanel;
+    PanelC: TPanel;
+    PanelD: TPanel;
+    BtnA: TSpeedButton;
+    BtnB: TSpeedButton;
+    BtnC: TSpeedButton;
+    BtnD: TSpeedButton;
+    procedure GenerateBtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure ExpandBtnClick(Sender: TObject);
+    procedure ReviewBtnClick(Sender: TObject);
+    procedure TreeChange(Sender: TObject; Node: TTreeNode);
+    procedure BtnClick(Sender: TObject);
+  private
+    FGroups: TArray<TArray<string>>;
+    FGroup: TArray<string>;
+    FNameToGroup: TDictionary<string, TArray<string>>;
+    FQuestion: Integer;
+    FId: Integer;
+    FIds: TArray<Integer>;
+    procedure CreateTree;
+  public
+  end;
+
+var
+  MainForm: TMainForm;
+
+implementation
+
+{$R *.dfm}
+
+procedure TMainForm.FormCreate(Sender: TObject);
+begin
+  Randomize;
+  PageControl.ActivePageIndex := 0;
+end;
+
+procedure TMainForm.GenerateBtnClick(Sender: TObject);
+var
+  s: string;
+  Name: string;
+  Group: TArray<string>;
+  Pair: TArray<string>;
+begin
+  FGroups := [];
+  Group := [];
+  for s in Memo.Lines do begin
+    if s = '' then
+      Continue
+    else if s[1] = '*' then begin
+      if Length(Group) <> 0 then
+        FGroups := FGroups + [Group];
+      Name := Copy(s, 2, s.Length);
+      Group := [Name];
+    end else if s.Contains(' - ') then begin
+      Pair := s.Split([' - ']);
+      Group := Group + [Pair[0]] + [Pair[1]];
+    end;
+  end;
+  FGroups := FGroups + [Group];
+  CreateTree;
+end;
+
+procedure TMainForm.CreateTree;
+var
+  Root: TTreeNode;
+  Group: TArray<string>;
+  i: Integer;
+  Left: string;
+  Right: string;
+  Node: TTreeNode;
+begin
+  FNameToGroup := TDictionary<string, TArray<string>>.Create;
+  Tree.Items.Clear;
+  Root := Tree.Items.Add(nil, 'abc');
+  for Group in FGroups do begin
+    FNameToGroup.Add(Group[0], Group);
+    Node := Tree.Items.Add(Root, Group[0]);
+    for i := 1 to (Length(Group)-1) div 2 do begin
+      Left := Group[2*i-1];
+      Right := Group[2*i];
+      Tree.Items.AddChild(Node, Left + ' - ' + Right);
+    end;
+  end;
+  Tree.FullCollapse;
+end;
+
+procedure TMainForm.ExpandBtnClick(Sender: TObject);
+begin
+  Tree.FullExpand;
+end;
+
+procedure TMainForm.ReviewBtnClick(Sender: TObject);
+var
+  i: Integer;
+  RandomCorrectIndex: Integer;
+  Btn: TSpeedButton;
+  Left: string;
+  Right: string;
+  Btns: TArray<TSpeedButton>;
+  WrongIds: TArray<Integer>;
+  EvenIdCount: Integer;
+  TakenIds: THashSet<Integer>;
+begin
+  PageControl.ActivePageIndex := 2;
+  Btns := [BtnA, BtnB, BtnC, BtnD];
+  FGroup := FNameToGroup[Tree.Selected.Text];
+  FQuestion := NumberBox.ValueInt;
+  FIds := [];
+  EvenIdCount := (Length(FGroup)-1) div 2;
+  for i := 1 to EvenIdCount do
+    FIds := FIds + [i];
+  FId := Random(Length(FIds));
+  Delete(FIds, FId, 1);
+  RandomCorrectIndex := Random(3);
+  Left := FGroup[2*FId-1];
+  Right := FGroup[2*FId];
+  TopPanel.Caption := Left;
+  Btns[RandomCorrectIndex].Caption := Right;
+
+  TakenIds := THashSet<Integer>.Create;
+  try
+    TakenIds.Add(FId);
+    WrongIds := [0, 0, 0];
+    for i := 0 to 2 do begin
+      repeat
+        WrongIds[i] := Random(EvenIdCount + 1);
+      until not TakenIds.Contains(WrongIds[i]);
+      TakenIds.Add(WrongIds[i]);
+    end;
+  finally
+    TakenIds.Free;
+  end;
+
+  i := 0;
+  for Btn in Btns do begin
+    if Btn.Caption = '' then begin
+      Btn.Caption := FGroup[2*WrongIds[i]];
+      Inc(i);
+    end;
+  end;
+end;
+
+procedure TMainForm.TreeChange(Sender: TObject; Node: TTreeNode);
+begin
+  ReviewBtn.Enabled := Tree.Selected.Level = 0;
+end;
+
+procedure TMainForm.BtnClick(Sender: TObject);
+begin
+//
+end;
+
+{
+
+to do - handle indenting
+
+}
+
+end.

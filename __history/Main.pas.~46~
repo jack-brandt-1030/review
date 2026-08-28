@@ -1,0 +1,104 @@
+﻿unit Main;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls;
+
+type
+  TMainForm = class(TForm)
+    GenerateBtn: TButton;
+    Memo: TMemo;
+    PageControl: TPageControl;
+    SheetA: TTabSheet;
+    SheetB: TTabSheet;
+    Tree: TTreeView;
+    ReviewBtn: TButton;
+    SheetC: TTabSheet;
+    TopPanel: TPanel;
+    procedure GenerateBtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+  private
+    FCards: TArray<TArray<string>>;
+    procedure CreateTree;
+  public
+  end;
+
+var
+  MainForm: TMainForm;
+
+implementation
+
+{$R *.dfm}
+
+procedure TMainForm.FormCreate(Sender: TObject);
+begin
+  CreateTree;
+  PageControl.ActivePageIndex := 1;
+end;
+
+procedure TMainForm.GenerateBtnClick(Sender: TObject);
+var
+  s: string;
+  Name: string;
+  Group: TArray<string>;
+  Pair: TArray<string>;
+begin
+  FCards := [];
+  Group := [];
+  for s in Memo.Lines do begin
+    if s = '' then
+      Continue
+    else if s[1] = '*' then begin
+      if Length(Group) <> 0 then
+        FCards := FCards + [Group];
+      Name := Copy(s, 2, s.Length);
+      Group := [Name];
+    end else if s.Contains(' - ') then begin
+      Pair := s.Split([' - ']);
+      Group := Group + [Pair[0]] + [Pair[1]];
+    end;
+  end;
+  FCards := FCards + [Group];
+
+
+
+  ShowMessage('Success');
+end;
+
+procedure TMainForm.CreateTree;
+var
+  Root: TTreeNode;
+  Group: TArray<string>;
+  i: Integer;
+  Left: string;
+  Right: string;
+  Node: TTreeNode;
+begin
+  Root := Tree.Items.Add(nil, 'abc');
+  for Group in FCards do begin
+    Node := Tree.Items.Add(Root, Group[0]);
+    for i := 1 to Length(Group) - 1 do begin
+
+      Left := Group[2*1];
+      Right := Group[2*i-1]
+
+      //
+    end;
+    //
+  end;
+  Node := Tree.Items.Add(Root, '1');
+  Tree.Items.AddChild(Node, '1a');
+  Tree.Items.Add(Root, '2');
+  Tree.FullCollapse;
+end;
+
+{
+
+to do - handle indenting
+
+}
+
+end.
