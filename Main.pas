@@ -9,6 +9,16 @@ uses
   Vcl.NumberBox, Vcl.Buttons;
 
 type
+
+  {to do - use record types}
+
+  PGroup = ^TGroup;
+
+  TGroup = record
+    Info: TArray<string>;
+    Group: PGroup;
+  end;
+
   TMainForm = class(TForm)
     PageControl: TPageControl;
     InfoSheet: TTabSheet;
@@ -60,6 +70,7 @@ implementation
 procedure TMainForm.FormCreate(Sender: TObject);
 var
   s: string;
+  Line: string;
   Name: string;
   Group: TArray<string>;
   Pair: TArray<string>;
@@ -77,17 +88,21 @@ begin
 
     FGroups := [];
     Group := [];
-    for s in Lines do begin
-      if s = '' then
+    for Line in Lines do begin
+      if Line = '' then
         Continue
-      else if s[1] = '*' then begin
+      else if Line[1] = '*' then begin
         if Length(Group) <> 0 then
           FGroups := FGroups + [Group];
-        Name := Copy(s, 2, s.Length);
+        Name := Copy(Line, 2, Line.Length);
         Group := [Name];
-      end else if s.Contains(' - ') then begin
-        Pair := s.Split([' - ']);
+      end else if Line.Contains(' - ') then begin
+        Pair := Line.Split([' - ']);
         Group := Group + [Pair[0]] + [Pair[1]];
+      end else if Copy(Line, 1, 4) = '    ' then begin
+        //
+      end else if (Line[1] = '(') and (Line[Length(Line)] = ')') then begin
+        //
       end;
     end;
     FGroups := FGroups + [Group];

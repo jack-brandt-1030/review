@@ -21,8 +21,6 @@ object MainForm: TMainForm
     ActivePage = PracticeSheet
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 624
-    ExplicitHeight = 441
     object InfoSheet: TTabSheet
       Caption = 'Info'
       ImageIndex = 1
@@ -37,8 +35,6 @@ object MainForm: TMainForm
         Indent = 19
         TabOrder = 0
         OnChange = TreeChange
-        ExplicitWidth = 610
-        ExplicitHeight = 315
       end
       object Panel: TPanel
         Left = 0
@@ -105,8 +101,6 @@ object MainForm: TMainForm
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
-        ExplicitWidth = 610
-        ExplicitHeight = 177
       end
       object PanelA: TPanel
         AlignWithMargins = True
@@ -119,8 +113,6 @@ object MainForm: TMainForm
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 1
-        ExplicitTop = 186
-        ExplicitWidth = 610
         object BtnA: TSpeedButton
           Left = 0
           Top = 0
@@ -146,8 +138,6 @@ object MainForm: TMainForm
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 2
-        ExplicitTop = 233
-        ExplicitWidth = 610
         object BtnB: TSpeedButton
           Tag = 1
           Left = 0
@@ -174,8 +164,6 @@ object MainForm: TMainForm
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 3
-        ExplicitTop = 280
-        ExplicitWidth = 610
         object BtnC: TSpeedButton
           Tag = 2
           Left = 0
@@ -202,8 +190,6 @@ object MainForm: TMainForm
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 4
-        ExplicitTop = 327
-        ExplicitWidth = 610
         object BtnD: TSpeedButton
           Tag = 3
           Left = 0
