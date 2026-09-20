@@ -1,6 +1,6 @@
-Review.dproj.local
-Review.identcache
-Review.res
+*.dproj.local
+*.identcache
+*.res
 *.dres
 /Win32
 /__history
