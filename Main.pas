@@ -167,9 +167,10 @@ begin
   if Length(FRemainingEvenIds) = 0 then begin
     ClearVars;
     PageControl.ActivePage := InfoSheet;
+    Exit;
   end;
 
-  a := Random(Length(FRemainingEvenIds)-1) + 1;
+  a := Random(Length(FRemainingEvenIds)-1);
   FCorrectId := FRemainingEvenIds[a];
   Delete(FRemainingEvenIds, a, 1);
   FCorrectTag := Random(3);
@@ -227,6 +228,7 @@ group format:
 
 *to do
 
+an infinite loop occurs when there's fewer than 4 cards. oof
 handle picking the right answer / wrong answer
 handle indenting within the txt file
 
