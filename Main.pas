@@ -37,14 +37,17 @@ type
     procedure CollapseBtnClick(Sender: TObject);
   private
     FGroups: TArray<TArray<string>>;
-    FGroup: TArray<string>;
     FNameToGroup: TDictionary<string, TArray<string>>;
+
+    FChosenGroup: TArray<string>;
     FQuestionNo: Integer;
-    FId: Integer;
-    FIds: TArray<Integer>;
-    FRandomCorrectIndex: Integer;
+    FCorrectId: Integer;
+    FRemainingEvenIds: TArray<Integer>;
+    FCorrectTag: Integer;
+
     procedure CreateTree;
     procedure AskQuestion;
+    procedure ClearVars;
   end;
 
 var
@@ -55,34 +58,12 @@ implementation
 {$R *.dfm}
 
 procedure TMainForm.FormCreate(Sender: TObject);
-
-  function ReadLines(Lines: TStringList): TArray<TArray<string>>;
-  var
-    s: string;
-    Name: string;
-    Group: TArray<string>;
-    Pair: TArray<string>;
-  begin
-    Result := [];
-    Group := [];
-    for s in Lines do begin
-      if s = '' then
-        Continue
-      else if s[1] = '*' then begin
-        if Length(Group) <> 0 then
-          Result := Result + [Group];
-        Name := Copy(s, 2, s.Length);
-        Group := [Name];
-      end else if s.Contains(' - ') then begin
-        Pair := s.Split([' - ']);
-        Group := Group + [Pair[0]] + [Pair[1]];
-      end;
-    end;
-    Result := Result + [Group];
-  end;
 var
-  Lines: TStringList;
   s: string;
+  Name: string;
+  Group: TArray<string>;
+  Pair: TArray<string>;
+  Lines: TStringList;
 begin
   Randomize;
   PageControl.ActivePageIndex := 0;
@@ -93,7 +74,24 @@ begin
     else
       s := 'cards.txt';
     Lines.LoadFromFile(s, TEncoding.UTF8);
-    FGroups := ReadLines(Lines);
+
+    FGroups := [];
+    Group := [];
+    for s in Lines do begin
+      if s = '' then
+        Continue
+      else if s[1] = '*' then begin
+        if Length(Group) <> 0 then
+          FGroups := FGroups + [Group];
+        Name := Copy(s, 2, s.Length);
+        Group := [Name];
+      end else if s.Contains(' - ') then begin
+        Pair := s.Split([' - ']);
+        Group := Group + [Pair[0]] + [Pair[1]];
+      end;
+    end;
+    FGroups := FGroups + [Group];
+
     CreateTree;
   finally
     Lines.Free;
@@ -143,75 +141,91 @@ end;
 procedure TMainForm.ReviewBtnClick(Sender: TObject);
 var
   i: Integer;
-  EvenIdCount: Integer;
 begin
-  PageControl.ActivePageIndex := PageControl.ActivePageIndex + 1;
-  FGroup := FNameToGroup[Tree.Selected.Text];
+  FChosenGroup := FNameToGroup[Tree.Selected.Text];
+  PageControl.ActivePage := PracticeSheet;
   FQuestionNo := 1;
-  FIds := [];
-  EvenIdCount := (Length(FGroup)-1) div 2;
-  for i := 1 to EvenIdCount do
-    FIds := FIds + [i];
+  FRemainingEvenIds := [];
+  for i := 1 to Length(FChosenGroup) - 1 do
+    if i mod 2 = 0 then
+      FRemainingEvenIds := FRemainingEvenIds + [i];
   AskQuestion;
 end;
 
 procedure TMainForm.AskQuestion;
 var
+  a: Integer;
   i: Integer;
   EvenIdCount: Integer;
-  Btn: TSpeedButton;
   Left: string;
   Right: string;
   Btns: TArray<TSpeedButton>;
-  WrongIds: TArray<Integer>;
   TakenIds: THashSet<Integer>;
+  WrongId: Integer;
 begin
-  FId := Random(Length(FIds)) + 1;
-  Delete(FIds, FId, 1);
-  FRandomCorrectIndex := Random(3);
-  Left := FGroup[2*FId-1];
-  Right := FGroup[2*FId];
+
+  if Length(FRemainingEvenIds) = 0 then begin
+    ClearVars;
+    PageControl.ActivePage := InfoSheet;
+  end;
+
+  a := Random(Length(FRemainingEvenIds)-1) + 1;
+  FCorrectId := FRemainingEvenIds[a];
+  Delete(FRemainingEvenIds, a, 1);
+  FCorrectTag := Random(3);
+  Left := FChosenGroup[FCorrectId-1];
+  Right := FChosenGroup[FCorrectId];
   PromptPanel.Caption := Left;
   Btns := [BtnA, BtnB, BtnC, BtnD];
-  Btns[FRandomCorrectIndex].Caption := Right;
+  Btns[FCorrectTag].Caption := Right;
 
-  EvenIdCount := (Length(FGroup)-1) div 2;
+  EvenIdCount := (Length(FChosenGroup)-1) div 2;
 
   TakenIds := THashSet<Integer>.Create;
   try
-    TakenIds.Add(FId);
-    WrongIds := [0, 0, 0];
-    for i := 0 to 2 do begin
-      repeat
-        WrongIds[i] := Random(EvenIdCount) + 1;
-      until not TakenIds.Contains(WrongIds[i]);
-      TakenIds.Add(WrongIds[i]);
+    TakenIds.Add(FCorrectId);
+    for i := 0 to Length(Btns) - 1 do begin
+      if i <> FCorrectTag then begin
+        repeat
+          WrongId := 2*(Random(EvenIdCount) + 1);
+        until not TakenIds.Contains(WrongId);
+        TakenIds.Add(WrongId);
+        Btns[i].Caption := FChosenGroup[WrongId];
+      end;
     end;
   finally
     TakenIds.Free;
-  end;
-
-  i := 0;
-  for Btn in Btns do begin
-    if Btn.Caption = '' then begin
-      Btn.Caption := FGroup[2*WrongIds[i]];
-      Inc(i);
-    end;
   end;
 end;
 
 procedure TMainForm.BtnClick(Sender: TObject);
 begin
-  if (Sender as TSpeedButton).Tag = FRandomCorrectIndex then begin
-    ShowMessage('Right');
+  if (Sender as TSpeedButton).Tag = FCorrectTag then begin
+    ShowMessage('Right!');
     Inc(FQuestionNo);
     AskQuestion;
   end;
 end;
 
+procedure TMainForm.ClearVars;
+begin
+  FChosenGroup := [];
+  FQuestionNo := 0;
+  FCorrectId := 0;
+  FRemainingEvenIds := [];
+  FCorrectTag := 0;
+end;
+
 {
 
-to do
+*notes
+
+group format:
+
+[name, foreign language, english, foreign language, english, etc]
+ 0     1                 2        3                 4
+
+*to do
 
 handle picking the right answer / wrong answer
 handle indenting within the txt file
