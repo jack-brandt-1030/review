@@ -15,8 +15,6 @@ type
     Tree: TTreeView;
     PracticeSheet: TTabSheet;
     PromptPanel: TPanel;
-    ToolBar: TToolBar;
-    ExpandBtn: TToolButton;
     QuestionAmountBox: TNumberBox;
     PanelA: TPanel;
     PanelB: TPanel;
@@ -26,10 +24,10 @@ type
     BtnB: TSpeedButton;
     BtnC: TSpeedButton;
     BtnD: TSpeedButton;
-    ReviewBtn: TToolButton;
     Panel: TPanel;
     QuestionsLabel: TLabel;
-    TestPanel: TPanel;
+    ExpandBtn: TButton;
+    ReviewBtn: TButton;
     procedure FormCreate(Sender: TObject);
     procedure ExpandBtnClick(Sender: TObject);
     procedure ReviewBtnClick(Sender: TObject);

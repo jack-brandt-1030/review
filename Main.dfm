@@ -18,7 +18,7 @@ object MainForm: TMainForm
     Top = 0
     Width = 624
     Height = 441
-    ActivePage = PracticeSheet
+    ActivePage = InfoSheet
     Align = alClient
     TabOrder = 0
     object InfoSheet: TTabSheet
@@ -27,83 +27,57 @@ object MainForm: TMainForm
       object Tree: TTreeView
         AlignWithMargins = True
         Left = 3
-        Top = 63
+        Top = 53
         Width = 610
-        Height = 345
+        Height = 355
         Align = alClient
         Indent = 19
         TabOrder = 0
         OnChange = TreeChange
-        ExplicitLeft = 64
-        ExplicitTop = 88
-        ExplicitWidth = 393
-        ExplicitHeight = 289
+        ExplicitTop = 63
+        ExplicitHeight = 345
       end
       object Panel: TPanel
         Left = 0
-        Top = 30
+        Top = 0
         Width = 616
-        Height = 30
+        Height = 50
         Align = alTop
         BevelOuter = bvNone
         TabOrder = 1
-        ExplicitTop = 50
+        ExplicitTop = 30
         object QuestionsLabel: TLabel
-          Left = 10
-          Top = 8
+          Left = 218
+          Top = 9
           Width = 53
           Height = 15
           Caption = 'Questions'
         end
         object QuestionAmountBox: TNumberBox
-          Left = 75
-          Top = 5
+          Left = 277
+          Top = 6
           Width = 25
           Height = 23
           TabOrder = 0
           Value = 25.000000000000000000
         end
-      end
-      object TestPanel: TPanel
-        Left = 0
-        Top = 0
-        Width = 616
-        Height = 30
-        Align = alTop
-        BevelOuter = bvNone
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'Segoe UI'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 2
-        object ToolBar: TToolBar
-          Left = 0
-          Top = 0
-          Width = 616
-          Height = 30
-          Align = alClient
-          ButtonHeight = 29
-          ButtonWidth = 57
-          Caption = 'ToolBar'
-          ShowCaptions = True
-          TabOrder = 0
-          object ExpandBtn: TToolButton
-            Left = 0
-            Top = 0
-            Caption = 'Expand'
-            ImageIndex = 0
-            Style = tbsTextButton
-            OnClick = ExpandBtnClick
-          end
-          object ReviewBtn: TToolButton
-            Left = 57
-            Top = 0
-            Caption = 'Review'
-            ImageIndex = 1
-            OnClick = ReviewBtnClick
-          end
+        object ExpandBtn: TButton
+          Left = 10
+          Top = 5
+          Width = 75
+          Height = 25
+          Caption = 'Expand'
+          TabOrder = 1
+          OnClick = ExpandBtnClick
+        end
+        object ReviewBtn: TButton
+          Left = 95
+          Top = 5
+          Width = 75
+          Height = 25
+          Caption = 'Review'
+          TabOrder = 2
+          OnClick = ReviewBtnClick
         end
       end
     end
@@ -119,10 +93,6 @@ object MainForm: TMainForm
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 616
-        ExplicitHeight = 100
       end
       object PanelA: TPanel
         AlignWithMargins = True
@@ -135,9 +105,6 @@ object MainForm: TMainForm
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 1
-        ExplicitLeft = 88
-        ExplicitTop = 168
-        ExplicitWidth = 185
         object BtnA: TSpeedButton
           Left = 0
           Top = 0
@@ -163,9 +130,6 @@ object MainForm: TMainForm
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 2
-        ExplicitLeft = 328
-        ExplicitTop = 160
-        ExplicitWidth = 185
         object BtnB: TSpeedButton
           Left = 0
           Top = 0
@@ -190,9 +154,6 @@ object MainForm: TMainForm
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 3
-        ExplicitLeft = 88
-        ExplicitTop = 280
-        ExplicitWidth = 185
         object BtnC: TSpeedButton
           Left = 0
           Top = 0
@@ -217,9 +178,6 @@ object MainForm: TMainForm
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 4
-        ExplicitLeft = 368
-        ExplicitTop = 288
-        ExplicitWidth = 185
         object BtnD: TSpeedButton
           Left = 0
           Top = 0
