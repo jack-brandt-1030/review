@@ -28,20 +28,23 @@ type
     QuestionsLabel: TLabel;
     ExpandBtn: TButton;
     ReviewBtn: TButton;
+    CollapseBtn: TButton;
     procedure FormCreate(Sender: TObject);
     procedure ExpandBtnClick(Sender: TObject);
     procedure ReviewBtnClick(Sender: TObject);
     procedure TreeChange(Sender: TObject; Node: TTreeNode);
     procedure BtnClick(Sender: TObject);
+    procedure CollapseBtnClick(Sender: TObject);
   private
     FGroups: TArray<TArray<string>>;
     FGroup: TArray<string>;
     FNameToGroup: TDictionary<string, TArray<string>>;
-    FQuestion: Integer;
+    FQuestionNo: Integer;
     FId: Integer;
     FIds: TArray<Integer>;
+    FRandomCorrectIndex: Integer;
     procedure CreateTree;
-  public
+    procedure AskQuestion;
   end;
 
 var
@@ -77,7 +80,6 @@ procedure TMainForm.FormCreate(Sender: TObject);
     end;
     Result := Result + [Group];
   end;
-
 var
   Lines: TStringList;
   s: string;
@@ -119,7 +121,8 @@ begin
       Tree.Items.AddChild(Node, Left + ' - ' + Right);
     end;
   end;
-  Tree.FullCollapse;
+  Tree.FullExpand;
+  ReviewBtn.Enabled := False;
 end;
 
 procedure TMainForm.ExpandBtnClick(Sender: TObject);
@@ -127,33 +130,52 @@ begin
   Tree.FullExpand;
 end;
 
+procedure TMainForm.CollapseBtnClick(Sender: TObject);
+begin
+  Tree.FullCollapse;
+end;
+
+procedure TMainForm.TreeChange(Sender: TObject; Node: TTreeNode);
+begin
+  ReviewBtn.Enabled := (Tree.Selected.Level = 0) and (Tree.Selected.Count > 0);
+end;
+
 procedure TMainForm.ReviewBtnClick(Sender: TObject);
 var
   i: Integer;
-  RandomCorrectIndex: Integer;
+  EvenIdCount: Integer;
+begin
+  PageControl.ActivePageIndex := PageControl.ActivePageIndex + 1;
+  FGroup := FNameToGroup[Tree.Selected.Text];
+  FQuestionNo := 1;
+  FIds := [];
+  EvenIdCount := (Length(FGroup)-1) div 2;
+  for i := 1 to EvenIdCount do
+    FIds := FIds + [i];
+  AskQuestion;
+end;
+
+procedure TMainForm.AskQuestion;
+var
+  i: Integer;
+  EvenIdCount: Integer;
   Btn: TSpeedButton;
   Left: string;
   Right: string;
   Btns: TArray<TSpeedButton>;
   WrongIds: TArray<Integer>;
-  EvenIdCount: Integer;
   TakenIds: THashSet<Integer>;
 begin
-  PageControl.ActivePageIndex := PageControl.ActivePageIndex + 1;
-  Btns := [BtnA, BtnB, BtnC, BtnD];
-  FGroup := FNameToGroup[Tree.Selected.Text];
-  FQuestion := QuestionAmountBox.ValueInt;
-  FIds := [];
-  EvenIdCount := (Length(FGroup)-1) div 2;
-  for i := 1 to EvenIdCount do
-    FIds := FIds + [i];
   FId := Random(Length(FIds)) + 1;
   Delete(FIds, FId, 1);
-  RandomCorrectIndex := Random(3);
+  FRandomCorrectIndex := Random(3);
   Left := FGroup[2*FId-1];
   Right := FGroup[2*FId];
   PromptPanel.Caption := Left;
-  Btns[RandomCorrectIndex].Caption := Right;
+  Btns := [BtnA, BtnB, BtnC, BtnD];
+  Btns[FRandomCorrectIndex].Caption := Right;
+
+  EvenIdCount := (Length(FGroup)-1) div 2;
 
   TakenIds := THashSet<Integer>.Create;
   try
@@ -178,19 +200,21 @@ begin
   end;
 end;
 
-procedure TMainForm.TreeChange(Sender: TObject; Node: TTreeNode);
-begin
-  ReviewBtn.Enabled := Tree.Selected.Level = 0;
-end;
-
 procedure TMainForm.BtnClick(Sender: TObject);
 begin
-//
+  if (Sender as TSpeedButton).Tag = FRandomCorrectIndex then begin
+    ShowMessage('Right');
+    Inc(FQuestionNo);
+    AskQuestion;
+  end;
 end;
 
 {
 
-to do - handle indenting within the txt file
+to do
+
+handle picking the right answer / wrong answer
+handle indenting within the txt file
 
 }
 

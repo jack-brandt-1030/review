@@ -2,8 +2,8 @@ object MainForm: TMainForm
   Left = 0
   Top = 0
   Caption = 'Review'
-  ClientHeight = 441
-  ClientWidth = 624
+  ClientHeight = 504
+  ClientWidth = 796
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,11 +16,13 @@ object MainForm: TMainForm
   object PageControl: TPageControl
     Left = 0
     Top = 0
-    Width = 624
-    Height = 441
-    ActivePage = InfoSheet
+    Width = 796
+    Height = 504
+    ActivePage = PracticeSheet
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 624
+    ExplicitHeight = 441
     object InfoSheet: TTabSheet
       Caption = 'Info'
       ImageIndex = 1
@@ -28,33 +30,34 @@ object MainForm: TMainForm
         AlignWithMargins = True
         Left = 3
         Top = 53
-        Width = 610
-        Height = 355
+        Width = 782
+        Height = 418
         Align = alClient
+        BorderStyle = bsNone
         Indent = 19
         TabOrder = 0
         OnChange = TreeChange
-        ExplicitTop = 63
-        ExplicitHeight = 345
+        ExplicitWidth = 610
+        ExplicitHeight = 315
       end
       object Panel: TPanel
         Left = 0
         Top = 0
-        Width = 616
+        Width = 788
         Height = 50
         Align = alTop
         BevelOuter = bvNone
         TabOrder = 1
-        ExplicitTop = 30
+        ExplicitWidth = 616
         object QuestionsLabel: TLabel
-          Left = 218
+          Left = 328
           Top = 9
           Width = 53
           Height = 15
           Caption = 'Questions'
         end
         object QuestionAmountBox: TNumberBox
-          Left = 277
+          Left = 387
           Top = 6
           Width = 25
           Height = 23
@@ -71,13 +74,22 @@ object MainForm: TMainForm
           OnClick = ExpandBtnClick
         end
         object ReviewBtn: TButton
-          Left = 95
+          Left = 180
           Top = 5
           Width = 75
           Height = 25
           Caption = 'Review'
           TabOrder = 2
           OnClick = ReviewBtnClick
+        end
+        object CollapseBtn: TButton
+          Left = 95
+          Top = 5
+          Width = 75
+          Height = 25
+          Caption = 'Collapse'
+          TabOrder = 3
+          OnClick = CollapseBtnClick
         end
       end
     end
@@ -88,27 +100,31 @@ object MainForm: TMainForm
         AlignWithMargins = True
         Left = 3
         Top = 3
-        Width = 610
-        Height = 217
+        Width = 782
+        Height = 280
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
+        ExplicitWidth = 610
+        ExplicitHeight = 177
       end
       object PanelA: TPanel
         AlignWithMargins = True
         Left = 3
-        Top = 226
-        Width = 610
+        Top = 289
+        Width = 782
         Height = 41
         Align = alBottom
         BevelOuter = bvNone
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 1
+        ExplicitTop = 186
+        ExplicitWidth = 610
         object BtnA: TSpeedButton
           Left = 0
           Top = 0
-          Width = 610
+          Width = 782
           Height = 41
           Align = alClient
           Flat = True
@@ -122,21 +138,25 @@ object MainForm: TMainForm
       object PanelB: TPanel
         AlignWithMargins = True
         Left = 3
-        Top = 273
-        Width = 610
+        Top = 336
+        Width = 782
         Height = 41
         Align = alBottom
         BevelOuter = bvNone
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 2
+        ExplicitTop = 233
+        ExplicitWidth = 610
         object BtnB: TSpeedButton
+          Tag = 1
           Left = 0
           Top = 0
-          Width = 610
+          Width = 782
           Height = 41
           Align = alClient
           Flat = True
+          OnClick = BtnClick
           ExplicitLeft = 88
           ExplicitTop = 16
           ExplicitWidth = 23
@@ -146,21 +166,25 @@ object MainForm: TMainForm
       object PanelC: TPanel
         AlignWithMargins = True
         Left = 3
-        Top = 320
-        Width = 610
+        Top = 383
+        Width = 782
         Height = 41
         Align = alBottom
         BevelOuter = bvNone
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 3
+        ExplicitTop = 280
+        ExplicitWidth = 610
         object BtnC: TSpeedButton
+          Tag = 2
           Left = 0
           Top = 0
-          Width = 610
+          Width = 782
           Height = 41
           Align = alClient
           Flat = True
+          OnClick = BtnClick
           ExplicitLeft = 96
           ExplicitTop = 24
           ExplicitWidth = 23
@@ -170,21 +194,25 @@ object MainForm: TMainForm
       object PanelD: TPanel
         AlignWithMargins = True
         Left = 3
-        Top = 367
-        Width = 610
+        Top = 430
+        Width = 782
         Height = 41
         Align = alBottom
         BevelOuter = bvNone
         Color = clGradientActiveCaption
         ParentBackground = False
         TabOrder = 4
+        ExplicitTop = 327
+        ExplicitWidth = 610
         object BtnD: TSpeedButton
+          Tag = 3
           Left = 0
           Top = 0
-          Width = 610
+          Width = 782
           Height = 41
           Align = alClient
           Flat = True
+          OnClick = BtnClick
           ExplicitLeft = 104
           ExplicitTop = 32
           ExplicitWidth = 23
