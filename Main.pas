@@ -10,18 +10,14 @@ uses
 
 type
   TMainForm = class(TForm)
-    GenerateBtn: TButton;
-    Memo: TMemo;
     PageControl: TPageControl;
-    SheetA: TTabSheet;
-    SheetB: TTabSheet;
+    InfoSheet: TTabSheet;
     Tree: TTreeView;
-    ReviewBtn: TButton;
-    SheetC: TTabSheet;
-    TopPanel: TPanel;
+    PracticeSheet: TTabSheet;
+    PromptPanel: TPanel;
     ToolBar: TToolBar;
     ExpandBtn: TToolButton;
-    NumberBox: TNumberBox;
+    QuestionAmountBox: TNumberBox;
     PanelA: TPanel;
     PanelB: TPanel;
     PanelC: TPanel;
@@ -30,7 +26,10 @@ type
     BtnB: TSpeedButton;
     BtnC: TSpeedButton;
     BtnD: TSpeedButton;
-    procedure GenerateBtnClick(Sender: TObject);
+    ReviewBtn: TToolButton;
+    Panel: TPanel;
+    QuestionsLabel: TLabel;
+    TestPanel: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure ExpandBtnClick(Sender: TObject);
     procedure ReviewBtnClick(Sender: TObject);
@@ -55,35 +54,50 @@ implementation
 {$R *.dfm}
 
 procedure TMainForm.FormCreate(Sender: TObject);
+
+  function ReadLines(Lines: TStringList): TArray<TArray<string>>;
+  var
+    s: string;
+    Name: string;
+    Group: TArray<string>;
+    Pair: TArray<string>;
+  begin
+    Result := [];
+    Group := [];
+    for s in Lines do begin
+      if s = '' then
+        Continue
+      else if s[1] = '*' then begin
+        if Length(Group) <> 0 then
+          Result := Result + [Group];
+        Name := Copy(s, 2, s.Length);
+        Group := [Name];
+      end else if s.Contains(' - ') then begin
+        Pair := s.Split([' - ']);
+        Group := Group + [Pair[0]] + [Pair[1]];
+      end;
+    end;
+    Result := Result + [Group];
+  end;
+
+var
+  Lines: TStringList;
+  s: string;
 begin
   Randomize;
   PageControl.ActivePageIndex := 0;
-end;
-
-procedure TMainForm.GenerateBtnClick(Sender: TObject);
-var
-  s: string;
-  Name: string;
-  Group: TArray<string>;
-  Pair: TArray<string>;
-begin
-  FGroups := [];
-  Group := [];
-  for s in Memo.Lines do begin
-    if s = '' then
-      Continue
-    else if s[1] = '*' then begin
-      if Length(Group) <> 0 then
-        FGroups := FGroups + [Group];
-      Name := Copy(s, 2, s.Length);
-      Group := [Name];
-    end else if s.Contains(' - ') then begin
-      Pair := s.Split([' - ']);
-      Group := Group + [Pair[0]] + [Pair[1]];
-    end;
+  Lines := TStringList.Create;
+  try
+    if GetEnvironmentVariable('USERNAME') = 'liftj' then
+      s := '..\..\cards.txt'
+    else
+      s := 'cards.txt';
+    Lines.LoadFromFile(s, TEncoding.UTF8);
+    FGroups := ReadLines(Lines);
+    CreateTree;
+  finally
+    Lines.Free;
   end;
-  FGroups := FGroups + [Group];
-  CreateTree;
 end;
 
 procedure TMainForm.CreateTree;
@@ -97,7 +111,7 @@ var
 begin
   FNameToGroup := TDictionary<string, TArray<string>>.Create;
   Tree.Items.Clear;
-  Root := Tree.Items.Add(nil, 'abc');
+  Root := Tree.Items.Add(nil, 'Info');
   for Group in FGroups do begin
     FNameToGroup.Add(Group[0], Group);
     Node := Tree.Items.Add(Root, Group[0]);
@@ -127,10 +141,10 @@ var
   EvenIdCount: Integer;
   TakenIds: THashSet<Integer>;
 begin
-  PageControl.ActivePageIndex := 2;
+  PageControl.ActivePageIndex := PageControl.ActivePageIndex + 1;
   Btns := [BtnA, BtnB, BtnC, BtnD];
   FGroup := FNameToGroup[Tree.Selected.Text];
-  FQuestion := NumberBox.ValueInt;
+  FQuestion := QuestionAmountBox.ValueInt;
   FIds := [];
   EvenIdCount := (Length(FGroup)-1) div 2;
   for i := 1 to EvenIdCount do
@@ -140,7 +154,7 @@ begin
   RandomCorrectIndex := Random(3);
   Left := FGroup[2*FId-1];
   Right := FGroup[2*FId];
-  TopPanel.Caption := Left;
+  PromptPanel.Caption := Left;
   Btns[RandomCorrectIndex].Caption := Right;
 
   TakenIds := THashSet<Integer>.Create;
@@ -178,7 +192,7 @@ end;
 
 {
 
-to do - handle indenting
+to do - handle indenting within the txt file
 
 }
 
