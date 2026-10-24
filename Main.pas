@@ -9,21 +9,25 @@ uses
   Vcl.NumberBox, Vcl.Buttons;
 
 type
+  TCard = class
+    Left: string;
+    Right: string;
+    Notes: TArray<string>;
+  end;
 
-  {to do - use record types}
-
-  PGroup = ^TGroup;
-
-  TGroup = record
-    Info: TArray<string>;
-    Group: PGroup;
+  TGroup = class
+    Name: string;
+    Cards: TObjectList<TCard>;
+    Groups: TObjectList<TGroup>;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
   TMainForm = class(TForm)
     PageControl: TPageControl;
     InfoSheet: TTabSheet;
     Tree: TTreeView;
-    PracticeSheet: TTabSheet;
+    ReviewSheet: TTabSheet;
     PromptPanel: TPanel;
     QuestionAmountBox: TNumberBox;
     PanelA: TPanel;
@@ -37,27 +41,29 @@ type
     Panel: TPanel;
     QuestionsLabel: TLabel;
     ExpandBtn: TButton;
-    ReviewBtn: TButton;
     CollapseBtn: TButton;
+    GenerateSheet: TTabSheet;
+    Memo: TMemo;
+    InfoPanel: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure ExpandBtnClick(Sender: TObject);
-    procedure ReviewBtnClick(Sender: TObject);
-    procedure TreeChange(Sender: TObject; Node: TTreeNode);
-    procedure BtnClick(Sender: TObject);
+    procedure AnswerBtnClick(Sender: TObject);
     procedure CollapseBtnClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
-    FGroups: TArray<TArray<string>>;
-    FNameToGroup: TDictionary<string, TArray<string>>;
-
-    FChosenGroup: TArray<string>;
+    FGroups: TArray<TGroup>;
+    FNameToGroup: TDictionary<string, TGroup>;
+    FChosenGroup: TGroup;
     FQuestionNo: Integer;
     FCorrectId: Integer;
-    FRemainingEvenIds: TArray<Integer>;
+    FRemainingIds: TArray<Integer>;
     FCorrectTag: Integer;
-
-    procedure CreateTree;
+    procedure GoToPage(i: Integer);
+    procedure ReadMemo;
+    procedure StartReview;
     procedure AskQuestion;
     procedure ClearVars;
+    procedure AnswerBtn(i: Integer);
   end;
 
 var
@@ -67,75 +73,102 @@ implementation
 
 {$R *.dfm}
 
-procedure TMainForm.FormCreate(Sender: TObject);
-var
-  s: string;
-  Line: string;
-  Name: string;
-  Group: TArray<string>;
-  Pair: TArray<string>;
-  Lines: TStringList;
+constructor TGroup.Create;
 begin
-  Randomize;
-  PageControl.ActivePageIndex := 0;
-  Lines := TStringList.Create;
-  try
-    if GetEnvironmentVariable('USERNAME') = 'liftj' then
-      s := '..\..\cards.txt'
-    else
-      s := 'cards.txt';
-    Lines.LoadFromFile(s, TEncoding.UTF8);
-
-    FGroups := [];
-    Group := [];
-    for Line in Lines do begin
-      if Line = '' then
-        Continue
-      else if Line[1] = '*' then begin
-        if Length(Group) <> 0 then
-          FGroups := FGroups + [Group];
-        Name := Copy(Line, 2, Line.Length);
-        Group := [Name];
-      end else if Line.Contains(' - ') then begin
-        Pair := Line.Split([' - ']);
-        Group := Group + [Pair[0]] + [Pair[1]];
-      end else if Copy(Line, 1, 4) = '    ' then begin
-        //
-      end else if (Line[1] = '(') and (Line[Length(Line)] = ')') then begin
-        //
-      end;
-    end;
-    FGroups := FGroups + [Group];
-
-    CreateTree;
-  finally
-    Lines.Free;
-  end;
+  Cards := TObjectList<TCard>.Create(True);
+  Groups := TObjectList<TGroup>.Create(True);
 end;
 
-procedure TMainForm.CreateTree;
-var
-  Root: TTreeNode;
-  Group: TArray<string>;
-  i: Integer;
-  Left: string;
-  Right: string;
-  Node: TTreeNode;
+destructor TGroup.Destroy;
 begin
-  FNameToGroup := TDictionary<string, TArray<string>>.Create;
-  Tree.Items.Clear;
-  Root := Tree.Items.Add(nil, 'Info');
-  for Group in FGroups do begin
-    FNameToGroup.Add(Group[0], Group);
-    Node := Tree.Items.Add(Root, Group[0]);
-    for i := 1 to (Length(Group)-1) div 2 do begin
-      Left := Group[2*i-1];
-      Right := Group[2*i];
+  Cards.Free;
+  Groups.Free;
+  inherited;
+end;
+
+//------------------------------------------------------------------------------
+
+procedure TMainForm.FormCreate(Sender: TObject);
+var
+  i: Integer;
+begin
+  Randomize;
+  KeyPreview := True;
+  for i := 0 to PageControl.PageCount - 1 do
+    PageControl.Pages[i].TabVisible := False;
+  GoToPage(0);
+end;
+
+procedure TMainForm.ReadMemo;
+
+  procedure AddToTree(
+    Tree: TTreeView;
+    ParentNode: TTreeNode;
+    Group: TGroup);
+  var
+    Card: TCard;
+    Left: string;
+    Right: string;
+    Subgroup: TGroup;
+    Node: TTreeNode;
+  begin
+    FNameToGroup.Add(Group.Name, Group);
+    Node := Tree.Items.AddChild(ParentNode, Group.Name);
+    for Card in Group.Cards do begin
+      Left := Card.Left;
+      Right := Card.Right;
       Tree.Items.AddChild(Node, Left + ' - ' + Right);
     end;
+    for Subgroup in Group.Groups do
+      AddToTree(Tree, Node, Subgroup);
   end;
-  Tree.FullExpand;
-  ReviewBtn.Enabled := False;
+
+var
+  Line: string;
+  Group: TGroup;
+  Card: TCard;
+  Pair: TArray<string>;
+  Subgroup: TGroup;
+  NewGroup: Boolean;
+  Root: TTreeNode;
+begin
+  FGroups := [];
+  NewGroup := False;
+  for Line in Memo.Lines do begin
+    if Line = '' then
+      Continue
+    else if Line[1] = '*' then begin
+      Group := TGroup.Create;
+      Group.Name := Copy(Line, 2, Line.Length);
+      FGroups := FGroups + [Group];
+      NewGroup := True;
+    end else if Line.Contains(' - ') then begin
+      Card := TCard.Create;
+      Pair := Line.Split([' - ']);
+      Card.Left := Pair[0];
+      Card.Right := Pair[1];
+      if NewGroup then
+        Group.Cards.Add(Card)
+      else
+        Subgroup.Cards.Add(Card);
+    end else if Copy(Line, 1, 4) = '    ' then begin
+      Card.Notes := Card.Notes + [Copy(Line, 5, Line.Length)];
+    end else if (Line[1] = '(') and (Line[Line.Length] = ')') then begin
+      Subgroup := TGroup.Create;
+      Subgroup.Name := Copy(Line, 2, Line.Length - 2);
+      Group.Groups.Add(Subgroup);
+      NewGroup := False;
+    end;
+  end;
+  Memo.Lines.Clear;
+
+  Tree.Items.Clear;
+  Root := Tree.Items.Add(nil, 'Info');
+  FNameToGroup := TDictionary<string, TGroup>.Create;
+  for Group in FGroups do
+    AddToTree(Tree, Root, Group);
+  Root.Expanded := True;
+  GoToPage(1);
 end;
 
 procedure TMainForm.ExpandBtnClick(Sender: TObject);
@@ -148,22 +181,17 @@ begin
   Tree.FullCollapse;
 end;
 
-procedure TMainForm.TreeChange(Sender: TObject; Node: TTreeNode);
-begin
-  ReviewBtn.Enabled := (Tree.Selected.Level = 0) and (Tree.Selected.Count > 0);
-end;
-
-procedure TMainForm.ReviewBtnClick(Sender: TObject);
+procedure TMainForm.StartReview;
 var
   i: Integer;
 begin
   FChosenGroup := FNameToGroup[Tree.Selected.Text];
-  PageControl.ActivePage := PracticeSheet;
+  GoToPage(2);
   FQuestionNo := 1;
-  FRemainingEvenIds := [];
-  for i := 1 to Length(FChosenGroup) - 1 do
-    if i mod 2 = 0 then
-      FRemainingEvenIds := FRemainingEvenIds + [i];
+  FRemainingIds := [];
+  SetLength(FRemainingIds, FChosenGroup.Cards.Count);
+  for i := 1 to FChosenGroup.Cards.Count - 1 do
+    FRemainingIds[i] := i;
   AskQuestion;
 end;
 
@@ -171,31 +199,26 @@ procedure TMainForm.AskQuestion;
 var
   a: Integer;
   i: Integer;
-  EvenIdCount: Integer;
-  Left: string;
-  Right: string;
+  IdCount: Integer;
   Btns: TArray<TSpeedButton>;
   TakenIds: THashSet<Integer>;
   WrongId: Integer;
 begin
-
-  if Length(FRemainingEvenIds) = 0 then begin
+  if Length(FRemainingIds) = 0 then begin
     ClearVars;
-    PageControl.ActivePage := InfoSheet;
+    GoToPage(1);
     Exit;
   end;
 
-  a := Random(Length(FRemainingEvenIds)-1);
-  FCorrectId := FRemainingEvenIds[a];
-  Delete(FRemainingEvenIds, a, 1);
+  a := Random(Length(FRemainingIds)-1);
+  FCorrectId := FRemainingIds[a];
+  Delete(FRemainingIds, a, 1);
   FCorrectTag := Random(3);
-  Left := FChosenGroup[FCorrectId-1];
-  Right := FChosenGroup[FCorrectId];
-  PromptPanel.Caption := Left;
+  PromptPanel.Caption := FChosenGroup.Cards[FCorrectId].Left;
   Btns := [BtnA, BtnB, BtnC, BtnD];
-  Btns[FCorrectTag].Caption := Right;
+  Btns[FCorrectTag].Caption := FChosenGroup.Cards[FCorrectId].Right;
 
-  EvenIdCount := (Length(FChosenGroup)-1) div 2;
+  IdCount := (FChosenGroup.Cards.Count)-1;
 
   TakenIds := THashSet<Integer>.Create;
   try
@@ -203,10 +226,10 @@ begin
     for i := 0 to Length(Btns) - 1 do begin
       if i <> FCorrectTag then begin
         repeat
-          WrongId := 2*(Random(EvenIdCount) + 1);
+          WrongId := Random(IdCount);
         until not TakenIds.Contains(WrongId);
         TakenIds.Add(WrongId);
-        Btns[i].Caption := FChosenGroup[WrongId];
+        Btns[i].Caption := FChosenGroup.Cards[WrongId].Right;
       end;
     end;
   finally
@@ -214,38 +237,69 @@ begin
   end;
 end;
 
-procedure TMainForm.BtnClick(Sender: TObject);
+procedure TMainForm.AnswerBtn(i: Integer);
 begin
-  if (Sender as TSpeedButton).Tag = FCorrectTag then begin
+  if i = FCorrectTag then begin
     ShowMessage('Right!');
     Inc(FQuestionNo);
     AskQuestion;
   end;
 end;
 
+procedure TMainForm.AnswerBtnClick(Sender: TObject);
+begin
+  AnswerBtn((Sender as TSpeedButton).Tag);
+end;
+
 procedure TMainForm.ClearVars;
 begin
-  FChosenGroup := [];
+  FChosenGroup := Default(TGroup);
   FQuestionNo := 0;
   FCorrectId := 0;
-  FRemainingEvenIds := [];
+  FRemainingIds := [];
   FCorrectTag := 0;
+end;
+
+procedure TMainForm.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  Group: TGroup;
+begin
+  if PageControl.ActivePageIndex = 0 then begin
+    if (Key = VK_RETURN) and (ssCtrl in Shift)
+    and (Memo.Text <> '') then
+      ReadMemo;
+  end else if PageControl.ActivePageIndex = 1 then begin
+    if (Key = VK_RETURN) and (ssCtrl in Shift)
+    and (FNameToGroup.TryGetValue(Tree.Selected.Text, Group))
+    and (Group.Cards.Count > 0) then
+      StartReview;
+  end else if PageControl.ActivePageIndex = 2 then begin
+    if (Key >= Ord('1')) and (Key <= Ord('4')) then
+      AnswerBtn(StrToInt(Char(Key)) - 1);
+  end;
+end;
+
+procedure TMainForm.GoToPage(i: Integer);
+begin
+  case i of
+    0: InfoPanel.Caption := '  Paste formatted notes into the box, then press Control + Enter';
+    1: InfoPanel.Caption := '  Pick a group of notes, then press Control + Enter';
+    2: InfoPanel.Caption := '  Learn stuff';
+  end;
+  PageControl.ActivePageIndex := i;
 end;
 
 {
 
-*notes
-
-group format:
-
-[name, foreign language, english, foreign language, english, etc]
- 0     1                 2        3                 4
-
 *to do
 
+display card notes somewhere
 an infinite loop occurs when there's fewer than 4 cards. oof
 handle picking the right answer / wrong answer
-handle indenting within the txt file
+FGroups - should be ObjectList
+make it possible to paste in or use a txt file
+make it possible to quit halfway through a quiz
 
 }
 
