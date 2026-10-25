@@ -49,8 +49,6 @@ object MainForm: TMainForm
         BorderStyle = bsNone
         Indent = 19
         TabOrder = 0
-        ExplicitTop = 53
-        ExplicitHeight = 418
       end
       object Panel: TPanel
         Left = 0

@@ -137,6 +137,8 @@ begin
   for Line in Memo.Lines do begin
     if Line = '' then
       Continue
+    else if Line = '***' then
+      Break
     else if Line[1] = '*' then begin
       Group := TGroup.Create;
       Group.Name := Copy(Line, 2, Line.Length);
@@ -300,6 +302,7 @@ handle picking the right answer / wrong answer
 FGroups - should be ObjectList
 make it possible to paste in or use a txt file
 make it possible to quit halfway through a quiz
+if indented lines have a -, make new card
 
 }
 
