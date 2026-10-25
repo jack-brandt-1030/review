@@ -52,7 +52,7 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     FGroups: TArray<TGroup>;
-    FNameToGroup: TDictionary<string, TGroup>;
+    FNodeToGroup: TDictionary<TTreeNode, TGroup>;
     FChosenGroup: TGroup;
     FQuestionNo: Integer;
     FCorrectId: Integer;
@@ -112,8 +112,8 @@ procedure TMainForm.ReadMemo;
     Subgroup: TGroup;
     Node: TTreeNode;
   begin
-    FNameToGroup.Add(Group.Name, Group);
     Node := Tree.Items.AddChild(ParentNode, Group.Name);
+    FNodeToGroup.Add(Node, Group);
     for Card in Group.Cards do begin
       Left := Card.Left;
       Right := Card.Right;
@@ -166,7 +166,7 @@ begin
 
   Tree.Items.Clear;
   Root := Tree.Items.Add(nil, 'Info');
-  FNameToGroup := TDictionary<string, TGroup>.Create;
+  FNodeToGroup := TDictionary<TTreeNode, TGroup>.Create;
   for Group in FGroups do
     AddToTree(Tree, Root, Group);
   Root.Expanded := True;
@@ -187,7 +187,7 @@ procedure TMainForm.StartReview;
 var
   i: Integer;
 begin
-  FChosenGroup := FNameToGroup[Tree.Selected.Text];
+  FChosenGroup := FNodeToGroup[Tree.Selected];
   GoToPage(2);
   FQuestionNo := 1;
   FRemainingIds := [];
@@ -273,7 +273,7 @@ begin
       ReadMemo;
   end else if PageControl.ActivePageIndex = 1 then begin
     if (Key = VK_RETURN) and (ssCtrl in Shift)
-    and (FNameToGroup.TryGetValue(Tree.Selected.Text, Group))
+    and (FNodeToGroup.TryGetValue(Tree.Selected, Group))
     and (Group.Cards.Count > 0) then
       StartReview;
   end else if PageControl.ActivePageIndex = 2 then begin
