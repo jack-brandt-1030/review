@@ -60,7 +60,7 @@ type
     FChosenGroup: TGroup;
     FCorrectId: Integer;
     FRemainingIds: TArray<Integer>;
-    FCorrectTag: Integer;
+    FCorrectIndex: Integer;
     procedure GoToSheet(Sheet: TTabSheet);
     procedure ReadMemo;
     procedure StartReview;
@@ -223,21 +223,21 @@ begin
     Exit;
   end;
 
-  a := Random(Length(FRemainingIds)-1);
+  a := Random(Length(FRemainingIds) - 1);
   FCorrectId := FRemainingIds[a];
   Delete(FRemainingIds, a, 1);
-  FCorrectTag := Random(3);
+  FCorrectIndex := Random(3);
   PromptPanel.Caption := FChosenGroup.Cards[FCorrectId].Left;
   Btns := [BtnA, BtnB, BtnC, BtnD];
-  Btns[FCorrectTag].Caption := FChosenGroup.Cards[FCorrectId].Right;
+  Btns[FCorrectIndex].Caption := FChosenGroup.Cards[FCorrectId].Right;
 
-  IdCount := (FChosenGroup.Cards.Count)-1;
+  IdCount := (FChosenGroup.Cards.Count);
 
   TakenIds := THashSet<Integer>.Create;
   try
     TakenIds.Add(FCorrectId);
     for i := 0 to Length(Btns) - 1 do begin
-      if i <> FCorrectTag then begin
+      if i <> FCorrectIndex then begin
         repeat
           WrongId := Random(IdCount);
         until not TakenIds.Contains(WrongId);
@@ -252,7 +252,7 @@ end;
 
 procedure TMainForm.AnswerBtn(i: Integer);
 begin
-  if i = FCorrectTag then begin
+  if i = FCorrectIndex then begin
     ShowMessage('Right!');
     AskQuestion;
   end;
@@ -268,7 +268,7 @@ begin
   FChosenGroup := Default(TGroup);
   FCorrectId := 0;
   FRemainingIds := [];
-  FCorrectTag := 0;
+  FCorrectIndex := 0;
 end;
 
 procedure TMainForm.FormKeyDown(Sender: TObject; var Key: Word;
