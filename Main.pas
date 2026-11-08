@@ -198,8 +198,21 @@ end;
 procedure TMainForm.StartReview;
 var
   i: Integer;
+  TempGroup: TGroup;
+  Group: TGroup;
 begin
   FChosenGroup := FNodeToGroup[Tree.Selected];
+
+  if FChosenGroup.Cards.Count = 0 then begin
+    TempGroup := TGroup.Create;
+    for Group in FChosenGroup.Groups do begin
+      TempGroup.Cards.AddRange(Group.Cards);
+    end;
+    FChosenGroup := TempGroup;
+    if TempGroup.Cards.Count = 0 then
+      Exit;
+  end;
+
   GoToSheet(ReviewSheet);
   FRemainingIds := [];
   SetLength(FRemainingIds, FChosenGroup.Cards.Count);
@@ -274,7 +287,7 @@ end;
 procedure TMainForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
-  Group: TGroup;
+//  Group: TGroup;
   c: Char;
   i: Integer;
 begin
@@ -298,8 +311,9 @@ begin
       ReadMemo;
   end else if PageControl.ActivePage = DataSheet then begin
     if (Key = VK_RETURN) and (ssCtrl in Shift)
-    and (FNodeToGroup.TryGetValue(Tree.Selected, Group))
-    and (Group.Cards.Count > 3) then
+//    and (FNodeToGroup.TryGetValue(Tree.Selected, Group))
+//    and (Group.Cards.Count > 3)
+    then
       StartReview;
   end else if PageControl.ActivePage = ReviewSheet then begin
     if Char(Key) = 'Q' then
@@ -341,6 +355,7 @@ end;
 
 *to do
 
+make it possible to re- enter data
 make it possible to review all the subgroups in a group
 display card notes
 handle picking the right answer / wrong answer

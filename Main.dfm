@@ -20,10 +20,9 @@ object MainForm: TMainForm
     Top = 40
     Width = 796
     Height = 434
-    ActivePage = InfoSheet
+    ActivePage = DataSheet
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 464
     object InfoSheet: TTabSheet
       Caption = 'Info'
       ImageIndex = 3
@@ -34,7 +33,6 @@ object MainForm: TMainForm
         Height = 404
         Align = alClient
         TabOrder = 0
-        ExplicitHeight = 434
         object InfoLabel: TLabel
           Left = 10
           Top = 10
@@ -78,8 +76,8 @@ object MainForm: TMainForm
         Align = alClient
         BorderStyle = bsNone
         Indent = 19
+        ReadOnly = True
         TabOrder = 0
-        ExplicitHeight = 388
       end
       object Panel: TPanel
         Left = 0
@@ -252,6 +250,5 @@ object MainForm: TMainForm
     Alignment = taLeftJustify
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitTop = 484
   end
 end
