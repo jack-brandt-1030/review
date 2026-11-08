@@ -219,7 +219,7 @@ var
 begin
   if Length(FRemainingIds) = 0 then begin
     ClearVars;
-    GoToSheet(DataSheet);
+    StartReview;
     Exit;
   end;
 
@@ -302,8 +302,14 @@ begin
     and (Group.Cards.Count > 3) then
       StartReview;
   end else if PageControl.ActivePage = ReviewSheet then begin
-    if (Key >= Ord('1')) and (Key <= Ord('4')) then
-      AnswerBtn(StrToInt(Char(Key)) - 1);
+    if Char(Key) = 'Q' then
+      AnswerBtn(0)
+    else if Char(Key) = 'W' then
+      AnswerBtn(1)
+    else if Char(Key) = 'E' then
+      AnswerBtn(2)
+    else if Char(Key) = 'R' then
+      AnswerBtn(3);
   end;
 end;
 
@@ -316,7 +322,7 @@ begin
   else if Sheet = DataSheet then
     InfoPanel.Caption := '  Pick a group with at least 4 notes, then press Control + Enter'
   else if Sheet = ReviewSheet then
-    InfoPanel.Caption := '  Keys 1, 2, 3, and 4 can be used to answer';
+    InfoPanel.Caption := '  Keys Q, W, E, and R can be used to answer';
 
   PageControl.ActivePage := Sheet;
 end;
@@ -335,11 +341,13 @@ end;
 
 *to do
 
+make it possible to review all the subgroups in a group
 display card notes
 handle picking the right answer / wrong answer
 FGroups - should be ObjectList
 make it possible to paste in OR use a txt file
 make it possible to quit halfway through a quiz
+make it possible to review multiple groups at once with ctrl click
 
 }
 
